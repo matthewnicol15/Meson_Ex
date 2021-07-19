@@ -2,6 +2,8 @@
 // To change code accordingly, search for "sim data" and "real data"
 // To change between mass and PID data, search for "Mass data" and "PID data"
 
+// To correctly analyse data specify if it is simulation or real
+Double_t Data=0; // Simulation is 0, Real is 1
 
 #include <TDatabasePDG.h>
 #include <cstdlib>
@@ -92,7 +94,7 @@ void Tree_Reader_MesonEx_Rho(){
   t1->SetBranchAddress("mass",&v_mass);
   t1->SetBranchAddress("Pos_position",&v_Pos_position);
   */ // Mass data
-  TFile fileOutput1("/mnt/f/PhD/Meson_Analysis/Simulations/Rho_Sim_3282_RGA_Fall2018_Inbending_190721_01.root","recreate");
+  TFile fileOutput1("/mnt/f/PhD/Meson_Analysis/Simulations/Rho_Sim_3282_RGA_Fall2018_Inbending_190721_03.root","recreate");
 
   //Creating histograms
   // photon polarization
@@ -218,7 +220,7 @@ void Tree_Reader_MesonEx_Rho(){
   TLorentzVector miss_mass_res;
   TLorentzVector photon, photon_boost_inv, photon_boost_miss;
   TVector3 inv_KpKm_boost, miss_mass_res_3, photon_3, photon_3_boost_inv, photon_3_boost_miss, beam_3;
-  TVector3 el_corrected_3, el_3;
+  TVector3 Scattered_electron_3;
   TLorentzVector vertex_el, vertex_pip, vertex_pim;
   TLorentzVector vertex_pr;
   TLorentzVector vertex_kp;
@@ -348,7 +350,7 @@ void Tree_Reader_MesonEx_Rho(){
   TLorentzVector momentum_exchange; // momentum transfer
 
   TLorentzVector el, pip, pim;
-  TLorentzVector el_corrected, el_corrected_boost_inv;
+  TLorentzVector el_corrected, Scattered_electron, Scattered_electron_boost_inv;
   TLorentzVector pr;
   TLorentzVector kp, kp_boost_inv, kp_boost_miss;
   TLorentzVector km, km_boost_inv, km_boost_miss;
@@ -453,182 +455,13 @@ void Tree_Reader_MesonEx_Rho(){
       /* // Mass data
       if(v_charge->at(j) < 0){
 
-        if(v_PID->at(j)==11){
-
-          el.SetXYZM(v_p4->at(j).Px(),v_p4->at(j).Py(),v_p4->at(j).Pz(),0.000511);
-          P_el = sqrt((pow(v_p4->at(j).Px(),2))+(pow(v_p4->at(j).Py(),2))+(pow(v_p4->at(j).Pz(),2)));
-          TOF_el = v_time->at(j);
-          path_el = v_path->at(j);
-          beta_tof_el = v_beta->at(j);
-          beta_calc_el = P_el/(sqrt((pow(P_el,2))+(pow(el.M(),2))));
-          delta_beta_el = beta_calc_el-beta_tof_el;
-          vertex_time_el = TOF_el - path_el / (beta_tof_el*c);
-          vertex_el.SetXYZT(v_vertex->at(j).X(), v_vertex->at(j).Y(), v_vertex->at(j).Z(), vertex_time_el);
-          region_el = v_region->at(j);
-          h_el_Detectors->Fill(region_el);
-
-          v_el.push_back(el);
-          v_beta_tof_el.push_back(beta_tof_el);
-          v_P_el.push_back(P_el);
-          v_path_el.push_back(path_el);
-          v_TOF_el.push_back(TOF_el);
-          v_beta_calc_el.push_back(beta_calc_el);
-          v_delta_beta_el.push_back(delta_beta_el);
-          v_vertex_time_el.push_back(vertex_time_el);
-          v_vertex_el.push_back(vertex_el);
-          v_region_el.push_back(region_el);
-        }
-        else {
-
-          km.SetXYZM(v_p4->at(j).Px(),v_p4->at(j).Py(),v_p4->at(j).Pz(),0.493677);
-          P_km = sqrt((pow(v_p4->at(j).Px(),2))+(pow(v_p4->at(j).Py(),2))+(pow(v_p4->at(j).Pz(),2)));
-          TOF_km = v_time->at(j);
-          path_km = v_path->at(j);
-          beta_tof_km = v_beta->at(j);
-          beta_calc_km = P_km/(sqrt((pow(P_km,2))+(pow(km.M(),2))));
-          delta_beta_km = beta_calc_km-beta_tof_km;
-          vertex_time_km = TOF_km - path_km / (beta_tof_km*c);
-          vertex_km.SetXYZT(v_vertex->at(j).X(), v_vertex->at(j).Y(), v_vertex->at(j).Z(), vertex_time_km);
-          region_km = v_region->at(j);
-          h_Km_Detectors->Fill(region_km);
-
-          v_pim.push_back(km);
-          v_beta_tof_km.push_back(beta_tof_km);
-          v_P_km.push_back(P_km);
-          v_path_km.push_back(path_km);
-          v_TOF_km.push_back(TOF_km);
-          v_beta_calc_km.push_back(beta_calc_km);
-          v_delta_beta_km.push_back(delta_beta_km);
-          v_vertex_time_km.push_back(vertex_time_km);
-          v_vertex_km.push_back(vertex_km);
-          v_region_km.push_back(region_km);
-        }
-      }
-
-      // Using pure MC data
-      if(v_mcPID->at(j)==11){
-        mc_el.SetXYZM(v_mcp4->at(j).Px(),v_mcp4->at(j).Py(),v_mcp4->at(j).Pz(),0.000511);
-      }
-      else if(v_mcPID->at(j)==321){
-        mc_kp.SetXYZM(v_mcp4->at(j).Px(),v_mcp4->at(j).Py(),v_mcp4->at(j).Pz(),0.493677);
-      }
-      else if(v_mcPID->at(j)==-321){
-        mc_km.SetXYZM(v_mcp4->at(j).Px(),v_mcp4->at(j).Py(),v_mcp4->at(j).Pz(),0.493677);
-      }
-      else if(v_mcPID->at(j)==2212){
-        mc_pr.SetXYZM(v_mcp4->at(j).Px(),v_mcp4->at(j).Py(),v_mcp4->at(j).Pz(),0.938272);
-      }
-    }
-    // Checking the masses of positive particles to assign as proton or kaon
-    if(v_mass->at(v_Pos_position->at(0)) > v_mass->at(v_Pos_position->at(1))){
-
-      // Setting values for the proton
-      pr.SetXYZM(v_p4->at(v_Pos_position->at(0)).Px(),v_p4->at(v_Pos_position->at(0)).Py(),v_p4->at(v_Pos_position->at(0)).Pz(),0.938272);
-      P_pr = sqrt((pow(v_p4->at(v_Pos_position->at(0)).Px(),2))+(pow(v_p4->at(v_Pos_position->at(0)).Py(),2))+(pow(v_p4->at(v_Pos_position->at(0)).Pz(),2)));
-      TOF_pr = v_time->at(v_Pos_position->at(0));
-      path_pr = v_path->at(v_Pos_position->at(0));
-      beta_tof_pr = v_beta->at(v_Pos_position->at(0));
-      beta_calc_pr = P_pr/(sqrt((pow(P_pr,2))+(pow(pr.M(),2))));
-      delta_beta_pr = beta_calc_pr-beta_tof_pr;
-      vertex_time_pr = TOF_pr - path_pr / (beta_tof_pr*c);
-      vertex_pr.SetXYZT(v_vertex->at(v_Pos_position->at(0)).X(), v_vertex->at(v_Pos_position->at(0)).Y(), v_vertex->at(v_Pos_position->at(0)).Z(), vertex_time_pr);
-      region_pr = v_region->at(v_Pos_position->at(0));
-      h_pr_Detectors->Fill(region_pr);
-
-      v_pr.push_back(pr);
-      v_beta_tof_pr.push_back(beta_tof_pr);
-      v_P_pr.push_back(P_pr);
-      v_path_pr.push_back(path_pr);
-      v_TOF_pr.push_back(TOF_pr);
-      v_beta_calc_pr.push_back(beta_calc_pr);
-      v_delta_beta_pr.push_back(delta_beta_pr);
-      v_vertex_time_pr.push_back(vertex_time_pr);
-      v_vertex_pr.push_back(vertex_pr);
-      v_region_pr.push_back(region_pr);
-
-      // Setting values for the K+
-      kp.SetXYZM(v_p4->at(v_Pos_position->at(1)).Px(),v_p4->at(v_Pos_position->at(1)).Py(),v_p4->at(v_Pos_position->at(1)).Pz(),0.493677);
-      P_kp = sqrt((pow(v_p4->at(v_Pos_position->at(1)).Px(),2))+(pow(v_p4->at(v_Pos_position->at(1)).Py(),2))+(pow(v_p4->at(v_Pos_position->at(1)).Pz(),2)));
-      TOF_kp = v_time->at(v_Pos_position->at(1));
-      path_kp = v_path->at(v_Pos_position->at(1));
-      beta_tof_kp = v_beta->at(v_Pos_position->at(1));
-      beta_calc_kp = P_kp/(sqrt((pow(P_kp,2))+(pow(kp.M(),2))));
-      delta_beta_kp = beta_calc_kp-beta_tof_kp;
-      vertex_time_kp = TOF_kp - path_kp / (beta_tof_kp*c);
-      vertex_kp.SetXYZT(v_vertex->at(v_Pos_position->at(1)).X(), v_vertex->at(v_Pos_position->at(1)).Y(), v_vertex->at(v_Pos_position->at(1)).Z(), vertex_time_kp);
-      region_kp = v_region->at(v_Pos_position->at(1));
-      h_Kp_Detectors->Fill(region_kp);
-
-      v_kp.push_back(kp);
-      v_beta_tof_kp.push_back(beta_tof_kp);
-      v_P_kp.push_back(P_kp);
-      v_path_kp.push_back(path_kp);
-      v_TOF_kp.push_back(TOF_kp);
-      v_beta_calc_kp.push_back(beta_calc_kp);
-      v_delta_beta_kp.push_back(delta_beta_kp);
-      v_vertex_time_kp.push_back(vertex_time_kp);
-      v_vertex_kp.push_back(vertex_kp);
-      v_region_kp.push_back(region_kp);
-    }
-
-    else if(v_mass->at(v_Pos_position->at(0)) < v_mass->at(v_Pos_position->at(1))) {
-
-      // Setting values for the proton
-      pr.SetXYZM(v_p4->at(v_Pos_position->at(1)).Px(),v_p4->at(v_Pos_position->at(1)).Py(),v_p4->at(v_Pos_position->at(1)).Pz(),0.938272);
-      P_pr = sqrt((pow(v_p4->at(v_Pos_position->at(1)).Px(),2))+(pow(v_p4->at(v_Pos_position->at(1)).Py(),2))+(pow(v_p4->at(v_Pos_position->at(1)).Pz(),2)));
-      TOF_pr = v_time->at(v_Pos_position->at(1));
-      path_pr = v_path->at(v_Pos_position->at(1));
-      beta_tof_pr = v_beta->at(v_Pos_position->at(1));
-      beta_calc_pr = P_pr/(sqrt((pow(P_pr,2))+(pow(pr.M(),2))));
-      delta_beta_pr = beta_calc_pr-beta_tof_pr;
-      vertex_time_pr = TOF_pr - path_pr / (beta_tof_pr*c);
-      vertex_pr.SetXYZT(v_vertex->at(v_Pos_position->at(1)).X(), v_vertex->at(v_Pos_position->at(1)).Y(), v_vertex->at(v_Pos_position->at(1)).Z(), vertex_time_pr);
-      region_pr = v_region->at(v_Pos_position->at(1));
-      h_pr_Detectors->Fill(region_pr);
-
-      v_pr.push_back(pr);
-      v_beta_tof_pr.push_back(beta_tof_pr);
-      v_P_pr.push_back(P_pr);
-      v_path_pr.push_back(path_pr);
-      v_TOF_pr.push_back(TOF_pr);
-      v_beta_calc_pr.push_back(beta_calc_pr);
-      v_delta_beta_pr.push_back(delta_beta_pr);
-      v_vertex_time_pr.push_back(vertex_time_pr);
-      v_vertex_pr.push_back(vertex_pr);
-      v_region_pr.push_back(region_pr);
-
-      // Setting values for the K+
-      kp.SetXYZM(v_p4->at(v_Pos_position->at(0)).Px(),v_p4->at(v_Pos_position->at(0)).Py(),v_p4->at(v_Pos_position->at(0)).Pz(),0.493677);
-      P_kp = sqrt((pow(v_p4->at(v_Pos_position->at(0)).Px(),2))+(pow(v_p4->at(v_Pos_position->at(0)).Py(),2))+(pow(v_p4->at(v_Pos_position->at(0)).Pz(),2)));
-      TOF_kp = v_time->at(v_Pos_position->at(0));
-      path_kp = v_path->at(v_Pos_position->at(0));
-      beta_tof_kp = v_beta->at(v_Pos_position->at(0));
-      beta_calc_kp = P_kp/(sqrt((pow(P_kp,2))+(pow(kp.M(),2))));
-      delta_beta_kp = beta_calc_kp-beta_tof_kp;
-      vertex_time_kp = TOF_kp - path_kp / (beta_tof_kp*c);
-      vertex_kp.SetXYZT(v_vertex->at(v_Pos_position->at(0)).X(), v_vertex->at(v_Pos_position->at(0)).Y(), v_vertex->at(v_Pos_position->at(0)).Z(), vertex_time_kp);
-      region_kp = v_region->at(v_Pos_position->at(0));
-      h_Kp_Detectors->Fill(region_kp);
-
-      v_kp.push_back(kp);
-      v_beta_tof_kp.push_back(beta_tof_kp);
-      v_P_kp.push_back(P_kp);
-      v_path_kp.push_back(path_kp);
-      v_TOF_kp.push_back(TOF_kp);
-      v_beta_calc_kp.push_back(beta_calc_kp);
-      v_delta_beta_kp.push_back(delta_beta_kp);
-      v_vertex_time_kp.push_back(vertex_time_kp);
-      v_vertex_kp.push_back(vertex_kp);
-      v_region_kp.push_back(region_kp);
-      */ // Mass data
-
-      // /* // PID data
       if(v_PID->at(j)==11){
+
       el.SetXYZM(v_p4->at(j).Px(),v_p4->at(j).Py(),v_p4->at(j).Pz(),0.000511);
-      P_el = el.Rho();
+      P_el = sqrt((pow(v_p4->at(j).Px(),2))+(pow(v_p4->at(j).Py(),2))+(pow(v_p4->at(j).Pz(),2)));
       TOF_el = v_time->at(j);
       path_el = v_path->at(j);
-      beta_tof_el = v_beta_FT->at(j);
+      beta_tof_el = v_beta->at(j);
       beta_calc_el = P_el/(sqrt((pow(P_el,2))+(pow(el.M(),2))));
       delta_beta_el = beta_calc_el-beta_tof_el;
       vertex_time_el = TOF_el - path_el / (beta_tof_el*c);
@@ -647,30 +480,201 @@ void Tree_Reader_MesonEx_Rho(){
       v_vertex_el.push_back(vertex_el);
       v_region_el.push_back(region_el);
     }
-    else if(v_PID->at(j)==-211){
-    pim.SetXYZM(v_p4->at(j).Px(),v_p4->at(j).Py(),v_p4->at(j).Pz(),0.139570);
-    P_pim = pim.Rho();
-    TOF_pim = v_time->at(j);
-    path_pim = v_path->at(j);
-    beta_tof_pim = v_beta_FT->at(j);
-    beta_calc_pim = P_pim/(sqrt((pow(P_pim,2))+(pow(pim.M(),2))));
-    delta_beta_pim = beta_calc_pim-beta_tof_pim;
-    vertex_time_pim = TOF_pim - path_pim / (beta_tof_pim*c);
-    vertex_pim.SetXYZT(v_vertex->at(j).X(), v_vertex->at(j).Y(), v_vertex->at(j).Z(), vertex_time_pim);
-    region_pim = v_region->at(j);
+    else {
 
-    v_pim.push_back(pim);
-    v_beta_tof_pim.push_back(beta_tof_pim);
-    v_P_pim.push_back(P_pim);
-    v_path_pim.push_back(path_pim);
-    v_TOF_pim.push_back(TOF_pim);
-    v_beta_calc_pim.push_back(beta_calc_pim);
-    v_delta_beta_pim.push_back(delta_beta_pim);
-    v_vertex_time_pim.push_back(vertex_time_pim);
-    v_vertex_pim.push_back(vertex_pim);
-    v_region_pim.push_back(region_pim);
+    km.SetXYZM(v_p4->at(j).Px(),v_p4->at(j).Py(),v_p4->at(j).Pz(),0.493677);
+    P_km = sqrt((pow(v_p4->at(j).Px(),2))+(pow(v_p4->at(j).Py(),2))+(pow(v_p4->at(j).Pz(),2)));
+    TOF_km = v_time->at(j);
+    path_km = v_path->at(j);
+    beta_tof_km = v_beta->at(j);
+    beta_calc_km = P_km/(sqrt((pow(P_km,2))+(pow(km.M(),2))));
+    delta_beta_km = beta_calc_km-beta_tof_km;
+    vertex_time_km = TOF_km - path_km / (beta_tof_km*c);
+    vertex_km.SetXYZT(v_vertex->at(j).X(), v_vertex->at(j).Y(), v_vertex->at(j).Z(), vertex_time_km);
+    region_km = v_region->at(j);
+    h_Km_Detectors->Fill(region_km);
+
+    v_km.push_back(km);
+    v_beta_tof_km.push_back(beta_tof_km);
+    v_P_km.push_back(P_km);
+    v_path_km.push_back(path_km);
+    v_TOF_km.push_back(TOF_km);
+    v_beta_calc_km.push_back(beta_calc_km);
+    v_delta_beta_km.push_back(delta_beta_km);
+    v_vertex_time_km.push_back(vertex_time_km);
+    v_vertex_km.push_back(vertex_km);
+    v_region_km.push_back(region_km);
   }
-  else if(v_PID->at(j)==211){
+}
+
+// Using pure MC data
+if(v_mcPID->at(j)==11){
+mc_el.SetXYZM(v_mcp4->at(j).Px(),v_mcp4->at(j).Py(),v_mcp4->at(j).Pz(),0.000511);
+}
+else if(v_mcPID->at(j)==321){
+mc_kp.SetXYZM(v_mcp4->at(j).Px(),v_mcp4->at(j).Py(),v_mcp4->at(j).Pz(),0.493677);
+}
+else if(v_mcPID->at(j)==-321){
+mc_km.SetXYZM(v_mcp4->at(j).Px(),v_mcp4->at(j).Py(),v_mcp4->at(j).Pz(),0.493677);
+}
+else if(v_mcPID->at(j)==2212){
+mc_pr.SetXYZM(v_mcp4->at(j).Px(),v_mcp4->at(j).Py(),v_mcp4->at(j).Pz(),0.938272);
+}
+}
+// Checking the masses of positive particles to assign as proton or kaon
+if(v_mass->at(v_Pos_position->at(0)) > v_mass->at(v_Pos_position->at(1))){
+
+// Setting values for the proton
+pr.SetXYZM(v_p4->at(v_Pos_position->at(0)).Px(),v_p4->at(v_Pos_position->at(0)).Py(),v_p4->at(v_Pos_position->at(0)).Pz(),0.938272);
+P_pr = sqrt((pow(v_p4->at(v_Pos_position->at(0)).Px(),2))+(pow(v_p4->at(v_Pos_position->at(0)).Py(),2))+(pow(v_p4->at(v_Pos_position->at(0)).Pz(),2)));
+TOF_pr = v_time->at(v_Pos_position->at(0));
+path_pr = v_path->at(v_Pos_position->at(0));
+beta_tof_pr = v_beta->at(v_Pos_position->at(0));
+beta_calc_pr = P_pr/(sqrt((pow(P_pr,2))+(pow(pr.M(),2))));
+delta_beta_pr = beta_calc_pr-beta_tof_pr;
+vertex_time_pr = TOF_pr - path_pr / (beta_tof_pr*c);
+vertex_pr.SetXYZT(v_vertex->at(v_Pos_position->at(0)).X(), v_vertex->at(v_Pos_position->at(0)).Y(), v_vertex->at(v_Pos_position->at(0)).Z(), vertex_time_pr);
+region_pr = v_region->at(v_Pos_position->at(0));
+h_pr_Detectors->Fill(region_pr);
+
+v_pr.push_back(pr);
+v_beta_tof_pr.push_back(beta_tof_pr);
+v_P_pr.push_back(P_pr);
+v_path_pr.push_back(path_pr);
+v_TOF_pr.push_back(TOF_pr);
+v_beta_calc_pr.push_back(beta_calc_pr);
+v_delta_beta_pr.push_back(delta_beta_pr);
+v_vertex_time_pr.push_back(vertex_time_pr);
+v_vertex_pr.push_back(vertex_pr);
+v_region_pr.push_back(region_pr);
+
+// Setting values for the K+
+kp.SetXYZM(v_p4->at(v_Pos_position->at(1)).Px(),v_p4->at(v_Pos_position->at(1)).Py(),v_p4->at(v_Pos_position->at(1)).Pz(),0.493677);
+P_kp = sqrt((pow(v_p4->at(v_Pos_position->at(1)).Px(),2))+(pow(v_p4->at(v_Pos_position->at(1)).Py(),2))+(pow(v_p4->at(v_Pos_position->at(1)).Pz(),2)));
+TOF_kp = v_time->at(v_Pos_position->at(1));
+path_kp = v_path->at(v_Pos_position->at(1));
+beta_tof_kp = v_beta->at(v_Pos_position->at(1));
+beta_calc_kp = P_kp/(sqrt((pow(P_kp,2))+(pow(kp.M(),2))));
+delta_beta_kp = beta_calc_kp-beta_tof_kp;
+vertex_time_kp = TOF_kp - path_kp / (beta_tof_kp*c);
+vertex_kp.SetXYZT(v_vertex->at(v_Pos_position->at(1)).X(), v_vertex->at(v_Pos_position->at(1)).Y(), v_vertex->at(v_Pos_position->at(1)).Z(), vertex_time_kp);
+region_kp = v_region->at(v_Pos_position->at(1));
+h_Kp_Detectors->Fill(region_kp);
+
+v_kp.push_back(kp);
+v_beta_tof_kp.push_back(beta_tof_kp);
+v_P_kp.push_back(P_kp);
+v_path_kp.push_back(path_kp);
+v_TOF_kp.push_back(TOF_kp);
+v_beta_calc_kp.push_back(beta_calc_kp);
+v_delta_beta_kp.push_back(delta_beta_kp);
+v_vertex_time_kp.push_back(vertex_time_kp);
+v_vertex_kp.push_back(vertex_kp);
+v_region_kp.push_back(region_kp);
+}
+
+else if(v_mass->at(v_Pos_position->at(0)) < v_mass->at(v_Pos_position->at(1))) {
+
+// Setting values for the proton
+pr.SetXYZM(v_p4->at(v_Pos_position->at(1)).Px(),v_p4->at(v_Pos_position->at(1)).Py(),v_p4->at(v_Pos_position->at(1)).Pz(),0.938272);
+P_pr = sqrt((pow(v_p4->at(v_Pos_position->at(1)).Px(),2))+(pow(v_p4->at(v_Pos_position->at(1)).Py(),2))+(pow(v_p4->at(v_Pos_position->at(1)).Pz(),2)));
+TOF_pr = v_time->at(v_Pos_position->at(1));
+path_pr = v_path->at(v_Pos_position->at(1));
+beta_tof_pr = v_beta->at(v_Pos_position->at(1));
+beta_calc_pr = P_pr/(sqrt((pow(P_pr,2))+(pow(pr.M(),2))));
+delta_beta_pr = beta_calc_pr-beta_tof_pr;
+vertex_time_pr = TOF_pr - path_pr / (beta_tof_pr*c);
+vertex_pr.SetXYZT(v_vertex->at(v_Pos_position->at(1)).X(), v_vertex->at(v_Pos_position->at(1)).Y(), v_vertex->at(v_Pos_position->at(1)).Z(), vertex_time_pr);
+region_pr = v_region->at(v_Pos_position->at(1));
+h_pr_Detectors->Fill(region_pr);
+
+v_pr.push_back(pr);
+v_beta_tof_pr.push_back(beta_tof_pr);
+v_P_pr.push_back(P_pr);
+v_path_pr.push_back(path_pr);
+v_TOF_pr.push_back(TOF_pr);
+v_beta_calc_pr.push_back(beta_calc_pr);
+v_delta_beta_pr.push_back(delta_beta_pr);
+v_vertex_time_pr.push_back(vertex_time_pr);
+v_vertex_pr.push_back(vertex_pr);
+v_region_pr.push_back(region_pr);
+
+// Setting values for the K+
+kp.SetXYZM(v_p4->at(v_Pos_position->at(0)).Px(),v_p4->at(v_Pos_position->at(0)).Py(),v_p4->at(v_Pos_position->at(0)).Pz(),0.493677);
+P_kp = sqrt((pow(v_p4->at(v_Pos_position->at(0)).Px(),2))+(pow(v_p4->at(v_Pos_position->at(0)).Py(),2))+(pow(v_p4->at(v_Pos_position->at(0)).Pz(),2)));
+TOF_kp = v_time->at(v_Pos_position->at(0));
+path_kp = v_path->at(v_Pos_position->at(0));
+beta_tof_kp = v_beta->at(v_Pos_position->at(0));
+beta_calc_kp = P_kp/(sqrt((pow(P_kp,2))+(pow(kp.M(),2))));
+delta_beta_kp = beta_calc_kp-beta_tof_kp;
+vertex_time_kp = TOF_kp - path_kp / (beta_tof_kp*c);
+vertex_kp.SetXYZT(v_vertex->at(v_Pos_position->at(0)).X(), v_vertex->at(v_Pos_position->at(0)).Y(), v_vertex->at(v_Pos_position->at(0)).Z(), vertex_time_kp);
+region_kp = v_region->at(v_Pos_position->at(0));
+h_Kp_Detectors->Fill(region_kp);
+
+v_kp.push_back(kp);
+v_beta_tof_kp.push_back(beta_tof_kp);
+v_P_kp.push_back(P_kp);
+v_path_kp.push_back(path_kp);
+v_TOF_kp.push_back(TOF_kp);
+v_beta_calc_kp.push_back(beta_calc_kp);
+v_delta_beta_kp.push_back(delta_beta_kp);
+v_vertex_time_kp.push_back(vertex_time_kp);
+v_vertex_kp.push_back(vertex_kp);
+v_region_kp.push_back(region_kp);
+*/ // Mass data
+
+// /* // PID data
+if(v_PID->at(j)==11){
+  el.SetXYZM(v_p4->at(j).Px(),v_p4->at(j).Py(),v_p4->at(j).Pz(),0.000511);
+  P_el = el.Rho();
+  TOF_el = v_time->at(j);
+  path_el = v_path->at(j);
+  beta_tof_el = v_beta_FT->at(j);
+  beta_calc_el = P_el/(sqrt((pow(P_el,2))+(pow(el.M(),2))));
+  delta_beta_el = beta_calc_el-beta_tof_el;
+  vertex_time_el = TOF_el - path_el / (beta_tof_el*c);
+  vertex_el.SetXYZT(v_vertex->at(j).X(), v_vertex->at(j).Y(), v_vertex->at(j).Z(), vertex_time_el);
+  region_el = v_region->at(j);
+  h_el_Detectors->Fill(region_el);
+
+  v_el.push_back(el);
+  v_beta_tof_el.push_back(beta_tof_el);
+  v_P_el.push_back(P_el);
+  v_path_el.push_back(path_el);
+  v_TOF_el.push_back(TOF_el);
+  v_beta_calc_el.push_back(beta_calc_el);
+  v_delta_beta_el.push_back(delta_beta_el);
+  v_vertex_time_el.push_back(vertex_time_el);
+  v_vertex_el.push_back(vertex_el);
+  v_region_el.push_back(region_el);
+}
+
+else if(v_PID->at(j)==-211){
+  pim.SetXYZM(v_p4->at(j).Px(),v_p4->at(j).Py(),v_p4->at(j).Pz(),0.139570);
+  P_pim = pim.Rho();
+  TOF_pim = v_time->at(j);
+  path_pim = v_path->at(j);
+  beta_tof_pim = v_beta_FT->at(j);
+  beta_calc_pim = P_pim/(sqrt((pow(P_pim,2))+(pow(pim.M(),2))));
+  delta_beta_pim = beta_calc_pim-beta_tof_pim;
+  vertex_time_pim = TOF_pim - path_pim / (beta_tof_pim*c);
+  vertex_pim.SetXYZT(v_vertex->at(j).X(), v_vertex->at(j).Y(), v_vertex->at(j).Z(), vertex_time_pim);
+  region_pim = v_region->at(j);
+
+  v_pim.push_back(pim);
+  v_beta_tof_pim.push_back(beta_tof_pim);
+  v_P_pim.push_back(P_pim);
+  v_path_pim.push_back(path_pim);
+  v_TOF_pim.push_back(TOF_pim);
+  v_beta_calc_pim.push_back(beta_calc_pim);
+  v_delta_beta_pim.push_back(delta_beta_pim);
+  v_vertex_time_pim.push_back(vertex_time_pim);
+  v_vertex_pim.push_back(vertex_pim);
+  v_region_pim.push_back(region_pim);
+}
+
+else if(v_PID->at(j)==211){
   pip.SetXYZM(v_p4->at(j).Px(),v_p4->at(j).Py(),v_p4->at(j).Pz(),0.139570);
   P_pip = pip.Rho();
   TOF_pip = v_time->at(j);
@@ -693,32 +697,10 @@ void Tree_Reader_MesonEx_Rho(){
   v_vertex_pip.push_back(vertex_pip);
   v_region_pip.push_back(region_pip);
 }
-    else if(v_PID->at(j)==-321){
-    km.SetXYZM(v_p4->at(j).Px(),v_p4->at(j).Py(),v_p4->at(j).Pz(),0.49368);
-    P_km = sqrt((pow(v_p4->at(j).Px(),2))+(pow(v_p4->at(j).Py(),2))+(pow(v_p4->at(j).Pz(),2)));
-    TOF_km = v_time->at(j);
-    path_km = v_path->at(j);
-    beta_tof_km = v_beta_FT->at(j);
-    beta_calc_km = P_km/(sqrt((pow(P_km,2))+(pow(km.M(),2))));
-    delta_beta_km = beta_calc_km-beta_tof_km;
-    vertex_time_km = TOF_km - path_km / (beta_tof_km*c);
-    vertex_km.SetXYZT(v_vertex->at(j).X(), v_vertex->at(j).Y(), v_vertex->at(j).Z(), vertex_time_km);
-    region_km = v_region->at(j);
-    h_Km_Detectors->Fill(region_km);
 
-    v_pim.push_back(km);
-    v_beta_tof_km.push_back(beta_tof_km);
-    v_P_km.push_back(P_km);
-    v_path_km.push_back(path_km);
-    v_TOF_km.push_back(TOF_km);
-    v_beta_calc_km.push_back(beta_calc_km);
-    v_delta_beta_km.push_back(delta_beta_km);
-    v_vertex_time_km.push_back(vertex_time_km);
-    v_vertex_km.push_back(vertex_km);
-    v_region_km.push_back(region_km);
-  }
 
-  else if(v_PID->at(j)==2212){
+
+else if(v_PID->at(j)==2212){
   pr.SetXYZM(v_p4->at(j).Px(),v_p4->at(j).Py(),v_p4->at(j).Pz(),0.938);
   P_pr = pr.Rho();
   TOF_pr = v_time->at(j);
@@ -742,30 +724,8 @@ void Tree_Reader_MesonEx_Rho(){
   v_vertex_pr.push_back(vertex_pr);
   v_region_pr.push_back(region_pr);
 }
-else if(v_PID->at(j)==321){
-kp.SetXYZM(v_p4->at(j).Px(),v_p4->at(j).Py(),v_p4->at(j).Pz(),0.49368);
-P_kp = sqrt((pow(v_p4->at(j).Px(),2))+(pow(v_p4->at(j).Py(),2))+(pow(v_p4->at(j).Pz(),2)));
-TOF_kp = v_time->at(j);
-path_kp = v_path->at(j);
-beta_tof_kp = v_beta_FT->at(j);
-beta_calc_kp = P_kp/(sqrt((pow(P_kp,2))+(pow(kp.M(),2))));
-delta_beta_kp = beta_calc_kp-beta_tof_kp;
-vertex_time_kp = TOF_kp - path_kp / (beta_tof_kp*c);
-vertex_kp.SetXYZT(v_vertex->at(j).X(), v_vertex->at(j).Y(), v_vertex->at(j).Z(), vertex_time_kp);
-region_kp = v_region->at(j);
-h_Kp_Detectors->Fill(region_kp);
 
-v_kp.push_back(kp);
-v_beta_tof_kp.push_back(beta_tof_kp);
-v_P_kp.push_back(P_kp);
-v_path_kp.push_back(path_kp);
-v_TOF_kp.push_back(TOF_kp);
-v_beta_calc_kp.push_back(beta_calc_kp);
-v_delta_beta_kp.push_back(delta_beta_kp);
-v_vertex_time_kp.push_back(vertex_time_kp);
-v_vertex_kp.push_back(vertex_kp);
-v_region_kp.push_back(region_kp);
-}
+
 // */ //PID data
 }
 
@@ -774,151 +734,147 @@ if(v_el.size()==0)continue;
 el_corrected = Correct_Electron_g(v_el.at(0));
 
 // Selecting Events
-    if(v_pip.size()==1 && v_pim.size()==1 && v_el.size()==1 && v_pr.size()==1){
+if(v_pip.size()==1 && v_pim.size()==1 && v_el.size()==1 && v_pr.size()==1){
 
-      // if(v_region_pip.at(0)==1 && v_region_pim.at(0)==1 && v_region_pr.at(0)==1){
+  // if(v_region_pip.at(0)==1 && v_region_pim.at(0)==1 && v_region_pr.at(0)==1){
 
-      // Use the non-corrected electron for sim data
-      missall = (TLorentzVector)*readbeam + (TLorentzVector)*readtarget - v_el.at(0) - v_pip.at(0) - v_pr.at(0) - v_pim.at(0);
-      missp = (TLorentzVector)*readbeam + (TLorentzVector)*readtarget - v_el.at(0) - v_pip.at(0) - v_pim.at(0);
-      missKp = (TLorentzVector)*readbeam + (TLorentzVector)*readtarget - v_el.at(0) - v_pr.at(0) - v_pim.at(0);
-      missKm = (TLorentzVector)*readbeam + (TLorentzVector)*readtarget - v_el.at(0) - v_pip.at(0) - v_pr.at(0);
+  // Defining scattered electron depending on simulation or real data
+  if(Data == 0) Scattered_electron = el_corrected;
+  else if(Data == 1) Scattered_electron = v_el.at(0);
 
 
-      // Use the corrected electron for real data
-      // missall = (TLorentzVector)*readbeam + (TLorentzVector)*readtarget - el_corrected - v_pip.at(0) - v_pr.at(0) - v_pim.at(0);
-      // missp = (TLorentzVector)*readbeam + (TLorentzVector)*readtarget - el_corrected - v_pip.at(0) - v_pim.at(0);
-      // missKp = (TLorentzVector)*readbeam + (TLorentzVector)*readtarget - el_corrected - v_pr.at(0) - v_pim.at(0);
-      // missKm = (TLorentzVector)*readbeam + (TLorentzVector)*readtarget - el_corrected - v_pip.at(0) - v_pr.at(0);
-      // misse = (TLorentzVector)*readbeam + (TLorentzVector)*readtarget - v_pip.at(0) - v_pr.at(0) - v_pim.at(0);
+    // Use the non-corrected electron for sim data
+    missall = (TLorentzVector)*readbeam + (TLorentzVector)*readtarget - Scattered_electron - v_pip.at(0) - v_pr.at(0) - v_pim.at(0);
+    missp = (TLorentzVector)*readbeam + (TLorentzVector)*readtarget - Scattered_electron - v_pip.at(0) - v_pim.at(0);
+    missKp = (TLorentzVector)*readbeam + (TLorentzVector)*readtarget - Scattered_electron - v_pr.at(0) - v_pim.at(0);
+    missKm = (TLorentzVector)*readbeam + (TLorentzVector)*readtarget - Scattered_electron - v_pip.at(0) - v_pr.at(0);
+    misse = (TLorentzVector)*readbeam + (TLorentzVector)*readtarget - v_pip.at(0) - v_pr.at(0) - v_pim.at(0);
 
-    beam = (TLorentzVector)*readbeam;
-    beam_3 = beam.Vect();
-    // Calculate momentum change between proton and target
-    momentum_exchange = v_pr.at(0) - (TLorentzVector)*readtarget;
-    t = -(momentum_exchange.M2());
+  beam = (TLorentzVector)*readbeam;
+  beam_3 = beam.Vect();
+  // Calculate momentum change between proton and target
+  momentum_exchange = v_pr.at(0) - (TLorentzVector)*readtarget;
+  t = -(momentum_exchange.M2());
 
 
 
-    // defining the invariant and missing mass of the resonance
-    invrho = v_pip.at(0) + v_pim.at(0);
-    miss_mass_res = (TLorentzVector)*readbeam + (TLorentzVector)*readtarget - v_el.at(0) - v_pr.at(0);
+  // defining the invariant and missing mass of the resonance
+  invrho = v_pip.at(0) + v_pim.at(0);
+  miss_mass_res = (TLorentzVector)*readbeam + (TLorentzVector)*readtarget - v_el.at(0) - v_pr.at(0);
 
-    // Getting information on the virtual photon
-    // photon = (TLorentzVector)*readbeam - el_corrected; // Use this for real data
-    photon = (TLorentzVector)*readbeam - v_el.at(0); // Use this for sim data
+  // Getting information on the virtual photon
+  photon = (TLorentzVector)*readbeam - Scattered_electron;
 
-    v = photon.E(); // photon energy
-    Q_2 = -(photon.M2()); // photon 4 vector squared
-    el_theta = el_corrected.Theta(); // scattered electron theta
+  v = photon.E(); // photon energy
+  Q_2 = -(photon.M2()); // photon 4 vector squared
+  el_theta = Scattered_electron.Theta(); // scattered electron theta
 
-    // Calculating photon polarization
-    Photon_polarization = 1 / (1 + (2 * ((Q_2 + pow(v,2)) / Q_2)) * pow(tan(el_theta / 2),2));
+  // Calculating photon polarization
+  Photon_polarization = 1 / (1 + (2 * ((Q_2 + pow(v,2)) / Q_2)) * pow(tan(el_theta / 2),2));
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Boosting all particles into rho rest frame
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Boosting all particles into rho rest frame
 
-    inv_KpKm_boost = invrho.BoostVector(); // Get boost vector of rho
-    // inv_KpKm_boost = invrho.BoostVector(); // Get boost vector of rho
+  inv_KpKm_boost = invrho.BoostVector(); // Get boost vector of rho
 
-    //boost the pion in rho rest frame
-    pip_boost_rho = v_pip.at(0); // Get TLorentzVector of pi+
-    pip_boost_rho.Boost(-inv_KpKm_boost); // Boost pi+ in rho rest frame
+  //boost the pion in rho rest frame
+  pip_boost_rho = v_pip.at(0); // Get TLorentzVector of pi+
+  pip_boost_rho.Boost(-inv_KpKm_boost); // Boost pi+ in rho rest frame
 
-    //boost the photon in rho rest frame
-    photon_boost_inv = photon;
-    photon_boost_inv.Boost(-inv_KpKm_boost); // Boost photon in rho rest frame
+  //boost the photon in rho rest frame
+  photon_boost_inv = photon;
+  photon_boost_inv.Boost(-inv_KpKm_boost); // Boost photon in rho rest frame
 
-    //boost the electron in rho rest frame
-    el_corrected_boost_inv = el_corrected;
-    el_corrected_boost_inv.Boost(-inv_KpKm_boost); // Boost electron in rho rest frame
+  //boost the electron in rho rest frame
+  Scattered_electron_boost_inv = Scattered_electron;
+  Scattered_electron_boost_inv.Boost(-inv_KpKm_boost); // Boost electron in rho rest frame
 
-    //boost the beam in rho rest frame
-    beam_boost_inv = beam;
-    beam_boost_inv.Boost(-inv_KpKm_boost); // Boost electron in rho rest frame
+  //boost the beam in rho rest frame
+  beam_boost_inv = beam;
+  beam_boost_inv.Boost(-inv_KpKm_boost); // Boost electron in rho rest frame
 
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-    // Looking at difference between measured and reconstructed electron
-    hdelta_P->Fill(el_corrected.Rho() - misse.Rho());
-    hdelta_Theta->Fill(el_corrected.Theta() - misse.Theta());
-    hdelta_Phi->Fill(el_corrected.Phi() - misse.Phi());
+  // Looking at difference between measured and reconstructed electron
+  hdelta_P->Fill(Scattered_electron.Rho() - misse.Rho());
+  hdelta_Theta->Fill(Scattered_electron.Theta() - misse.Theta());
+  hdelta_Phi->Fill(Scattered_electron.Phi() - misse.Phi());
 
 
-    // Plotting the missing and invariant mass plots
-    hmiss_mass_all->Fill(missall.M2());
-    hmiss_momentum_all->Fill(missall.Rho());
-    hinvkpkm->Fill(invrho.M());
-    hmiss_mass_res->Fill(miss_mass_res.M());
-    hmissp->Fill(missp.M());
+  // Plotting the missing and invariant mass plots
+  hmiss_mass_all->Fill(missall.M2());
+  hmiss_momentum_all->Fill(missall.Rho());
+  hinvkpkm->Fill(invrho.M());
+  hmiss_mass_res->Fill(miss_mass_res.M());
+  hmissp->Fill(missp.M());
 
-    // Plotting the delta beta plots
-    h_delta_beta_kp->Fill(v_P_pip.at(0),v_delta_beta_pip.at(0));
-    h_delta_beta_km->Fill(v_P_pim.at(0),v_delta_beta_pim.at(0));
-    h_delta_beta_pr->Fill(v_P_pr.at(0),v_delta_beta_pr.at(0));
-
-
-    // Getting the 3 vector for scattered electron
-    el_corrected_3.SetXYZ(el_corrected.Px()/el_corrected.E(),el_corrected.Py()/el_corrected.E(),el_corrected.Pz()/el_corrected.E());
-
-    // Getting the photon 3 vector
-    photon_3.SetXYZ(photon.Px() / photon.E(),photon.Py() / photon.E(), photon.Pz() / photon.E());
+  // Plotting the delta beta plots
+  h_delta_beta_kp->Fill(v_P_pip.at(0),v_delta_beta_pip.at(0));
+  h_delta_beta_km->Fill(v_P_pim.at(0),v_delta_beta_pim.at(0));
+  h_delta_beta_pr->Fill(v_P_pr.at(0),v_delta_beta_pr.at(0));
 
 
-    if(fabs(v_delta_beta_pip.at(0))<0.02 && /* v_P_pip.at(0)>0.5 && v_P_kp.at(0)<2.6 &&*/ fabs(v_delta_beta_pim.at(0))<0.02 /*&& v_P_pim.at(0)>0.5 && v_P_km.at(0)<2.6*/ && fabs(v_delta_beta_pr.at(0))<0.02 /*&& v_P_pr.at(0)>0.2 && v_P_pr.at(0)<4.8*/){
+  // Getting the 3 vector for scattered electron
+  Scattered_electron_3 = Scattered_electron.Vect();
 
-      hmiss_mass_allc->Fill(missall.M2());
-      hmiss_momentum_allc->Fill(missall.Rho());
-      hinvkpkmc->Fill(invrho.M());
-      hmisspc->Fill(missp.M());
-
-      // if(fabs(missall.M2())<0.01 && missall.Rho()>0.3)hinvkpkmt->Fill(invkpkm.M());
-      if(fabs(missall.M2())<0.01 && missall.Rho()<0.5){
-        hinvkpkmt->Fill(invrho.M());
-        hmisspt->Fill(missp.M());
-        h_photon_energy_t->Fill(photon.E());
-        hmissKpKmt->Fill(missKp.M(),missKm.M());
-        h_t->Fill(t);
+  // Getting the photon 3 vector
+  photon_3.SetXYZ(photon.Px() / photon.E(),photon.Py() / photon.E(), photon.Pz() / photon.E());
 
 
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // Determining phi
+  if(fabs(v_delta_beta_pip.at(0))<0.02 && /* v_P_pip.at(0)>0.5 && v_P_kp.at(0)<2.6 &&*/ fabs(v_delta_beta_pim.at(0))<0.02 /*&& v_P_pim.at(0)>0.5 && v_P_km.at(0)<2.6*/ && fabs(v_delta_beta_pr.at(0))<0.02 /*&& v_P_pr.at(0)>0.2 && v_P_pr.at(0)<4.8*/){
 
-        // Defining reference frame
-        X_Axis = (el_corrected_boost_inv.Vect()).Cross(beam_boost_inv.Vect()); // scattered e cross with beam
-        Y_Axis = (photon_boost_inv.Vect()).Cross(X_Axis); // z-axis cross with x-axis to get y-axis
+    hmiss_mass_allc->Fill(missall.M2());
+    hmiss_momentum_allc->Fill(missall.Rho());
+    hinvkpkmc->Fill(invrho.M());
+    hmisspc->Fill(missp.M());
 
-        // Find xy-components of pi+
-        pip_x_component = pip_boost_rho.Vect() * X_Axis;
-        pip_y_component = pip_boost_rho.Vect() * Y_Axis;
+    // if(fabs(missall.M2())<0.01 && missall.Rho()>0.3)hinvkpkmt->Fill(invkpkm.M());
+    if(fabs(missall.M2())<0.01 && missall.Rho()<0.5){
+      hinvkpkmt->Fill(invrho.M());
+      hmisspt->Fill(missp.M());
+      h_photon_energy_t->Fill(photon.E());
+      hmissKpKmt->Fill(missKp.M(),missKm.M());
+      h_t->Fill(t);
 
-        // Calculate phi from the xy-components of pi+
-        Phi = atan2(pip_x_component,pip_y_component);
 
-        // Checking the sign of the phi angle
-        // if(X_Axis.Angle(Y_Prime_Axis)*TMath::RadToDeg()>90) Phi = -Phi;
+      ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      // Determining phi
 
-        // Applying cut on t and photon energy
-        // if(photon.E() < 2.4 || photon.E() > 2.6)continue;
-        // if(t < 0.1 || t > 0.2)continue;
+      // Defining reference frame
+      X_Axis = (Scattered_electron_boost_inv.Vect()).Cross(beam_boost_inv.Vect()); // scattered e cross with beam
+      Y_Axis = (photon_boost_inv.Vect()).Cross(X_Axis); // z-axis cross with x-axis to get y-axis
 
-        h_photon_polarization->Fill(Photon_polarization);
+      // Find xy-components of pi+
+      pip_x_component = pip_boost_rho.Vect() * X_Axis;
+      pip_y_component = pip_boost_rho.Vect() * Y_Axis;
 
-        // if(Photon_polarization < 0.85 || Photon_polarization > 0.95)continue;
+      // Calculate phi from the xy-components of pi+
+      Phi = atan2(pip_x_component,pip_y_component);
 
-        // Plotting the phi angles
-        h_phi->Fill(TMath::RadToDeg()*Phi);
+      // Checking the sign of the phi angle
+      // if(X_Axis.Angle(Y_Prime_Axis)*TMath::RadToDeg()>90) Phi = -Phi;
 
-        if(invrho.M() > 0.67 && invrho.M() < 0.87) h_phi1->Fill(TMath::RadToDeg()*Phi);
-        if(invrho.M() > 1.1 && invrho.M() < 1.5) h_phi2->Fill(TMath::RadToDeg()*Phi);
-        if(invrho.M() > 1.5 && invrho.M() < 1.9) h_phi3->Fill(TMath::RadToDeg()*Phi);
-        if(invrho.M() > 1.9) h_phi4->Fill(TMath::RadToDeg()*Phi);
+      // Applying cut on t and photon energy
+      // if(photon.E() < 2.4 || photon.E() > 2.6)continue;
+      // if(t < 0.1 || t > 0.2)continue;
 
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      h_photon_polarization->Fill(Photon_polarization);
 
-      }
+      // if(Photon_polarization < 0.85 || Photon_polarization > 0.95)continue;
+
+      // Plotting the phi angles
+      h_phi->Fill(TMath::RadToDeg()*Phi);
+
+      if(invrho.M() > 0.67 && invrho.M() < 0.87) h_phi1->Fill(TMath::RadToDeg()*Phi);
+      if(invrho.M() > 1.1 && invrho.M() < 1.5) h_phi2->Fill(TMath::RadToDeg()*Phi);
+      if(invrho.M() > 1.5 && invrho.M() < 1.9) h_phi3->Fill(TMath::RadToDeg()*Phi);
+      if(invrho.M() > 1.9) h_phi4->Fill(TMath::RadToDeg()*Phi);
+
+      ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    }
     // }
   }
 }
